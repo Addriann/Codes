@@ -110,27 +110,27 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
     .dark-mode button {
-      color: #fff;
+      color: #000;
     }
     .dark-mode #compareBtn {
       background: #ff00ff;
-      box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+      box-shadow: 0 0 10px #ff00ff, 0 0 10px #ff00ff;
     }
     .dark-mode #compareBtn:hover {
-      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+      box-shadow: 0 0 20px #ff00ff, 0 0 20px #ff00ff;
     }
     .dark-mode #clearBtn {
       background: #00ffff;
       color: #000;
-      box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      box-shadow: 0 0 10px #00ffff, 0 0 10px #00ffff;
     }
     .dark-mode #clearBtn:hover {
-      box-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
+      box-shadow: 0 0 20px #00ffff, 0 0 20px #00ffff;
     }
     .dark-mode #modeToggle {
       background: #ffff00;
       color: #000;
-      box-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00;
+      box-shadow: 0 0 10px #ffff00, 0 0 10px #ffff00;
     }
     .dark-mode #modeToggle:hover {
       box-shadow: 0 0 20px #ffff00, 0 0 30px #ffff00;
@@ -181,49 +181,49 @@
       color: #333;
     }
     .light-mode #compareBtn {
-      background: #00ff0050; /* Verde*/
+      background: #00ff0050; /* Verde */
       color: #fff;
-      box-shadow: 0 0 0px #00ff0050, 0 0 0px #00ff0030;
+      box-shadow: none;
     }
     .light-mode #compareBtn:hover {
-      box-shadow: 0 0 0px #00ff00, 0 0 0px #00ff00;
+      background: #00ff0080;
     }
     .light-mode #clearBtn {
-      background: #aa000050; /* Rojo*/
+      background: #aa000050; /* Rojo */
       color: #fff;
-      box-shadow: 0 0 0px #ff000050, 0 0 0px #ff000030;
+      box-shadow: none;
     }
     .light-mode #clearBtn:hover {
-      box-shadow: 0 0 0px #ff000050, 0 0 0px #ff000030;
+      background: #aa000080;
     }
     .light-mode #modeToggle {
-      background: #0000ff70; /* Azul*/
+      background: #0000ff70; /* Azul */
       color: #fff;
-      box-shadow: 0 0 0px #0000ff50, 0 0 0px #0000ff30;
+      box-shadow: none;
     }
     .light-mode #modeToggle:hover {
-      box-shadow: 0 0 0px #0000ff30, 0 0 0px #0000ff30;
+      background: #0000ff90;
     }
     .light-mode textarea {
-      background: rgba(0, 0, 0, 0.02); 
+      background: rgba(0, 0, 0, 0.02);
       color: #111;
-      border-color: rgba(0, 0, 0, 0.05); 
+      border-color: rgba(0, 0, 0, 0.05);
     }
     .light-mode .column {
-      background: rgba(0, 0, 0, 0.02); 
-      border-color: rgba(0, 0, 0, 0.05); 
+      background: rgba(0, 0, 0, 0.02);
+      border-color: rgba(0, 0, 0, 0.05);
     }
     .light-mode .added {
-      background: rgba(255, 0, 255, 0.05); 
+      background: rgba(0, 255, 0, 0.2);
     }
     .light-mode .removed {
-      background: rgba(0, 255, 255, 0.05); 
+      background: rgba(255, 0, 0, 0.2);
     }
     .light-mode .unchanged {
-      background: rgba(0, 0, 0, 0.02); 
+      background: rgba(0, 0, 0, 0.03);
     }
     .light-mode .placeholder {
-      background: rgba(0, 0, 0, 0.01); 
+      background: rgba(0, 0, 0, 0.02);
     }
     .light-mode .del-btn {
       background: #444;
@@ -298,12 +298,119 @@
       const oldText = leftArea.value;
       const newText = rightArea.value;
       const diff = Diff.diffLines(oldText, newText, { newlineIsToken: true });
+
       let leftLine = 1;
       let rightLine = 1;
-      diff.forEach(part => {
-        const lines = part.value.split(/\n/);
-        lines.forEach(line => {
-          if (part.removed) {
+      let i = 0;
+
+      while (i < diff.length) {
+        const part = diff[i];
+        const nextPart = diff[i + 1] || { value: '', added: false, removed: false };
+        const lines = part.value.split(/\n/).filter(line => line !== '');
+
+        if (part.added && nextPart.removed) {
+          // Caso: Línea añadida seguida de línea eliminada (alinearlas)
+          const nextLines = nextPart.value.split(/\n/).filter(line => line !== '');
+          const maxLen = Math.max(lines.length, nextLines.length);
+
+          for (let j = 0; j < maxLen; j++) {
+            const leftContent = j < nextLines.length ? nextLines[j] : '';
+            const rightContent = j < lines.length ? lines[j] : '';
+            const spanLeft = createLine(leftContent, leftContent ? 'removed' : 'placeholder', leftContent ? leftLine++ : null);
+            const spanRight = createLine(rightContent, rightContent ? 'added' : 'placeholder', rightContent ? rightLine++ : null);
+
+            if (leftContent) {
+              const btn = document.createElement('button');
+              btn.textContent = '×';
+              btn.className = 'del-btn';
+              btn.title = 'Eliminar del original';
+              btn.onclick = () => {
+                if (confirm('¿Eliminar esta línea del texto original?')) {
+                  removeLine(leftArea, leftContent);
+                }
+              };
+              spanLeft.appendChild(btn);
+            }
+            if (rightContent) {
+              const btn = document.createElement('button');
+              btn.textContent = '×';
+              btn.className = 'del-btn';
+              btn.title = 'Eliminar del modificado';
+              btn.onclick = () => {
+                if (confirm('¿Eliminar esta línea del texto modificado?')) {
+                  removeLine(rightArea, rightContent);
+                }
+              };
+              spanRight.appendChild(btn);
+            }
+
+            leftRes.appendChild(spanLeft);
+            rightRes.appendChild(spanRight);
+          }
+          i += 2; // Saltar ambas partes
+        } else if (part.removed && nextPart.added) {
+          // Caso: Línea eliminada seguida de línea añadida (alinearlas)
+          const nextLines = nextPart.value.split(/\n/).filter(line => line !== '');
+          const maxLen = Math.max(lines.length, nextLines.length);
+
+          for (let j = 0; j < maxLen; j++) {
+            const leftContent = j < lines.length ? lines[j] : '';
+            const rightContent = j < nextLines.length ? nextLines[j] : '';
+            const spanLeft = createLine(leftContent, leftContent ? 'removed' : 'placeholder', leftContent ? leftLine++ : null);
+            const spanRight = createLine(rightContent, rightContent ? 'added' : 'placeholder', rightContent ? rightLine++ : null);
+
+            if (leftContent) {
+              const btn = document.createElement('button');
+              btn.textContent = '×';
+              btn.className = 'del-btn';
+              btn.title = 'Eliminar del original';
+              btn.onclick = () => {
+                if (confirm('¿Eliminar esta línea del texto original?')) {
+                  removeLine(leftArea, leftContent);
+                }
+              };
+              spanLeft.appendChild(btn);
+            }
+            if (rightContent) {
+              const btn = document.createElement('button');
+              btn.textContent = '×';
+              btn.className = 'del-btn';
+              btn.title = 'Eliminar del modificado';
+              btn.onclick = () => {
+                if (confirm('¿Eliminar esta línea del texto modificado?')) {
+                  removeLine(rightArea, rightContent);
+                }
+              };
+              spanRight.appendChild(btn);
+            }
+
+            leftRes.appendChild(spanLeft);
+            rightRes.appendChild(spanRight);
+          }
+          i += 2; // Saltar ambas partes
+        } else if (part.added) {
+          // Caso: Solo línea añadida
+          lines.forEach(line => {
+            const spanLeft = createLine('', 'placeholder', null);
+            const spanRight = createLine(line, 'added', rightLine);
+            const btn = document.createElement('button');
+            btn.textContent = '×';
+            btn.className = 'del-btn';
+            btn.title = 'Eliminar del modificado';
+            btn.onclick = () => {
+              if (confirm('¿Eliminar esta línea del texto modificado?')) {
+                removeLine(rightArea, line);
+              }
+            };
+            spanRight.appendChild(btn);
+            leftRes.appendChild(spanLeft);
+            rightRes.appendChild(spanRight);
+            rightLine += 1;
+          });
+          i += 1;
+        } else if (part.removed) {
+          // Caso: Solo línea eliminada
+          lines.forEach(line => {
             const spanLeft = createLine(line, 'removed', leftLine);
             const spanRight = createLine('', 'placeholder', null);
             const btn = document.createElement('button');
@@ -319,33 +426,21 @@
             leftRes.appendChild(spanLeft);
             rightRes.appendChild(spanRight);
             leftLine += 1;
-          } else if (part.added) {
-            const spanLeft = createLine('', 'placeholder', null);
-            const spanRight = createLine(line, 'added', rightLine);
-            const btn = document.createElement('button');
-            btn.textContent = '×';
-            btn.className = 'del-btn';
-            btn.title = 'Eliminar del modificado';
-            btn.onclick = () => {
-              if (confirm('¿Eliminar esta línea del texto modificado?')) {
-                removeLine(rightArea, line);
-              }
-            };
-            spanRight.appendChild(btn);
-            leftRes.appendChild(spanLeft);
-            rightRes.appendChild(spanRight);
-            leftLine += 1;
-            rightLine += 1;
-          } else {
+          });
+          i += 1;
+        } else {
+          // Caso: Líneas sin cambios
+          lines.forEach(line => {
             const spanLeft = createLine(line, 'unchanged', leftLine);
             const spanRight = createLine(line, 'unchanged', rightLine);
             leftRes.appendChild(spanLeft);
             rightRes.appendChild(spanRight);
             leftLine += 1;
             rightLine += 1;
-          }
-        });
-      });
+          });
+          i += 1;
+        }
+      }
     }
 
     function removeLine(textArea, lineText) {
@@ -388,12 +483,12 @@
     [leftArea, rightArea].forEach(el => {
       el.addEventListener('input', () => {
         el.style.height = 'auto';
-        el.style.height = `auto`;
+        el.style.height = `${el.scrollHeight}px`;
       });
       // Inicializar altura
       setTimeout(() => {
-        el.style.height = `auto`;
-        el.style.height = `auto`;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
       }, 10);
     });
   </script>
