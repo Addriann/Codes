@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Herramienta Visual Diff</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
     body {
       font-family: monospace;
@@ -33,6 +34,23 @@
       gap: 2px;
       padding: 2px;
       height: 23vh;
+    }
+    .editor-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .textarea-controls {
+        display: flex;
+        justify-content: flex-end;
+        gap: 5px;
+        padding: 0 5px 2px;
+    }
+    .util-btn {
+        padding: 2px 8px;
+        font-size: 12px;
+        font-family: sans-serif;
     }
     textarea {
       flex: 1;
@@ -99,7 +117,7 @@
       display: block;
     }
 
-    /* Modo Oscuro (Dark Mode) - Colores originales */
+    /* Modo Oscuro (Dark Mode) */
     body.dark-mode {
       background: #121212;
       color: #fff;
@@ -111,6 +129,14 @@
     }
     .dark-mode button {
       color: #000;
+    }
+    .dark-mode .util-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: #eee;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .dark-mode .util-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
     }
     .dark-mode #compareBtn {
       background: #ff00ff;
@@ -144,30 +170,15 @@
       background: rgba(255, 255, 255, 0.05);
       border-color: rgba(255, 255, 255, 0.2);
     }
-    .dark-mode .added {
-      background: rgba(0, 255, 0, 0.2);
-    }
-    .dark-mode .removed {
-      background: rgba(255, 0, 0, 0.2);
-    }
-    .dark-mode .unchanged {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .dark-mode .placeholder {
-      background: rgba(255, 255, 255, 0.01);
-    }
-    .dark-mode .del-btn {
-      background: #bbb;
-      color: #000;
-    }
-    .dark-mode .del-btn:hover {
-      background: #999;
-    }
-    .dark-mode .line-number {
-      color: #888;
-    }
+    .dark-mode .added { background: rgba(0, 255, 0, 0.2); }
+    .dark-mode .removed { background: rgba(255, 0, 0, 0.2); }
+    .dark-mode .unchanged { background: rgba(255, 255, 255, 0.05); }
+    .dark-mode .placeholder { background: rgba(255, 255, 255, 0.01); }
+    .dark-mode .del-btn { background: #bbb; color: #000; }
+    .dark-mode .del-btn:hover { background: #999; }
+    .dark-mode .line-number { color: #888; }
 
-    /* Modo Claro (Light Mode) - Colores invertidos simétricamente */
+    /* Modo Claro (Light Mode) */
     body.light-mode {
       background: #f5f5f5;
       color: #333;
@@ -180,30 +191,20 @@
     .light-mode button {
       color: #333;
     }
-    .light-mode #compareBtn {
-      background: #00ff0050; /* Verde */
-      color: #fff;
-      box-shadow: none;
+    .light-mode .util-btn {
+        background: rgba(0, 0, 0, 0.08);
+        color: #333;
+        border: 1px solid rgba(0, 0, 0, 0.15);
     }
-    .light-mode #compareBtn:hover {
-      background: #00ff0080;
+    .light-mode .util-btn:hover {
+        background: rgba(0, 0, 0, 0.12);
     }
-    .light-mode #clearBtn {
-      background: #aa000050; /* Rojo */
-      color: #fff;
-      box-shadow: none;
-    }
-    .light-mode #clearBtn:hover {
-      background: #aa000080;
-    }
-    .light-mode #modeToggle {
-      background: #0000ff70; /* Azul */
-      color: #fff;
-      box-shadow: none;
-    }
-    .light-mode #modeToggle:hover {
-      background: #0000ff90;
-    }
+    .light-mode #compareBtn { background: #00ff0050; color: #fff; box-shadow: none; }
+    .light-mode #compareBtn:hover { background: #00ff0080; }
+    .light-mode #clearBtn { background: #aa000050; color: #fff; box-shadow: none; }
+    .light-mode #clearBtn:hover { background: #aa000080; }
+    .light-mode #modeToggle { background: #0000ff70; color: #fff; box-shadow: none; }
+    .light-mode #modeToggle:hover { background: #0000ff90; }
     .light-mode textarea {
       background: rgba(0, 0, 0, 0.02);
       color: #111;
@@ -213,39 +214,36 @@
       background: rgba(0, 0, 0, 0.02);
       border-color: rgba(0, 0, 0, 0.05);
     }
-    .light-mode .added {
-      background: rgba(0, 255, 0, 0.2);
-    }
-    .light-mode .removed {
-      background: rgba(255, 0, 0, 0.2);
-    }
-    .light-mode .unchanged {
-      background: rgba(0, 0, 0, 0.03);
-    }
-    .light-mode .placeholder {
-      background: rgba(0, 0, 0, 0.02);
-    }
-    .light-mode .del-btn {
-      background: #444;
-      color: #fff;
-    }
-    .light-mode .del-btn:hover {
-      background: #666;
-    }
-    .light-mode .line-number {
-      color: #777;
-    }
+    .light-mode .added { background: rgba(0, 255, 0, 0.2); }
+    .light-mode .removed { background: rgba(255, 0, 0, 0.2); }
+    .light-mode .unchanged { background: rgba(0, 0, 0, 0.03); }
+    .light-mode .placeholder { background: rgba(0, 0, 0, 0.02); }
+    .light-mode .del-btn { background: #444; color: #fff; }
+    .light-mode .del-btn:hover { background: #666; }
+    .light-mode .line-number { color: #777; }
   </style>
 </head>
-<body class="dark-mode">
+<body class="light-mode">
   <div id="controls">
     <button id="compareBtn">Comparar</button>
     <button id="clearBtn">Limpiar</button>
-    <button id="modeToggle">Cambiar a Modo Claro</button>
+    <button id="modeToggle">Cambiar a Modo Oscuro</button>
   </div>
   <div id="editor">
-    <textarea id="left" placeholder="Pega el texto original aquí..."></textarea>
-    <textarea id="right" placeholder="Pega el texto modificado aquí..."></textarea>
+    <div class="editor-wrapper">
+        <div class="textarea-controls">
+            <button id="left-unindent" class="util-btn" title="Eliminar sangría">↤</button>
+            <button id="left-togglecase" class="util-btn" title="Convertir mayúsculas/minúsculas">Aa</button>
+        </div>
+        <textarea id="left" placeholder="Pega el texto original aquí..."></textarea>
+    </div>
+    <div class="editor-wrapper">
+        <div class="textarea-controls">
+             <button id="right-unindent" class="util-btn" title="Eliminar sangría">↤</button>
+             <button id="right-togglecase" class="util-btn" title="Convertir mayúsculas/minúsculas">Aa</button>
+        </div>
+        <textarea id="right" placeholder="Pega el texto modificado aquí..."></textarea>
+    </div>
   </div>
   <div id="result">
     <div class="column" id="leftResult"></div>
@@ -261,6 +259,12 @@
     const clearBtn = document.getElementById('clearBtn');
     const modeToggle = document.getElementById('modeToggle');
 
+    // Botones de herramientas
+    const leftUnindentBtn = document.getElementById('left-unindent');
+    const leftToggleCaseBtn = document.getElementById('left-togglecase');
+    const rightUnindentBtn = document.getElementById('right-unindent');
+    const rightToggleCaseBtn = document.getElementById('right-togglecase');
+
     // Función para alternar entre modos
     function toggleMode() {
       const currentMode = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
@@ -271,10 +275,25 @@
       localStorage.setItem('mode', newMode);
     }
 
-    // Cargar modo guardado o predeterminado
-    const savedMode = localStorage.getItem('mode') || 'dark';
-    document.body.classList.add(`${savedMode}-mode`);
+    // Cargar modo guardado o predeterminado (light por preferencia)
+    const savedMode = localStorage.getItem('mode') || 'light';
+    document.body.className = `${savedMode}-mode`; // Limpia clases previas y establece la correcta
     modeToggle.textContent = savedMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro';
+
+    // ---- Nuevas funciones de herramientas ----
+    function unindentText(textArea) {
+        const lines = textArea.value.split('\n');
+        const unindentedLines = lines.map(line => line.replace(/^[ \t]+/, ''));
+        textArea.value = unindentedLines.join('\n');
+    }
+
+    function toggleCaseText(textArea) {
+        const text = textArea.value;
+        // Si hay más minúsculas que mayúsculas, convierte a mayúsculas. De lo contrario, a minúsculas.
+        const isMostlyLowercase = (text.match(/[a-z]/g) || []).length >= (text.match(/[A-Z]/g) || []).length;
+        textArea.value = isMostlyLowercase ? text.toUpperCase() : text.toLowerCase();
+    }
+    // ------------------------------------------
 
     function createLine(content, className, lineNumber) {
       const div = document.createElement('div');
@@ -308,151 +327,76 @@
         const nextPart = diff[i + 1] || { value: '', added: false, removed: false };
         const lines = part.value.split(/\n/).filter(line => line !== '');
 
-        if (part.added && nextPart.removed) {
-          // Caso: Línea añadida seguida de línea eliminada (alinearlas)
-          const nextLines = nextPart.value.split(/\n/).filter(line => line !== '');
-          const maxLen = Math.max(lines.length, nextLines.length);
+        if ((part.added && nextPart.removed) || (part.removed && nextPart.added)) {
+          // Alinear líneas añadidas y eliminadas
+          const removedLines = (part.removed ? part.value : nextPart.value).split(/\n/).filter(l => l !== '');
+          const addedLines = (part.added ? part.value : nextPart.value).split(/\n/).filter(l => l !== '');
+          const maxLen = Math.max(addedLines.length, removedLines.length);
 
           for (let j = 0; j < maxLen; j++) {
-            const leftContent = j < nextLines.length ? nextLines[j] : '';
-            const rightContent = j < lines.length ? lines[j] : '';
+            const leftContent = j < removedLines.length ? removedLines[j] : '';
+            const rightContent = j < addedLines.length ? addedLines[j] : '';
             const spanLeft = createLine(leftContent, leftContent ? 'removed' : 'placeholder', leftContent ? leftLine++ : null);
             const spanRight = createLine(rightContent, rightContent ? 'added' : 'placeholder', rightContent ? rightLine++ : null);
-
-            if (leftContent) {
-              const btn = document.createElement('button');
-              btn.textContent = '×';
-              btn.className = 'del-btn';
-              btn.title = 'Eliminar del original';
-              btn.onclick = () => {
-                if (confirm('¿Eliminar esta línea del texto original?')) {
-                  removeLine(leftArea, leftContent);
-                }
-              };
-              spanLeft.appendChild(btn);
-            }
-            if (rightContent) {
-              const btn = document.createElement('button');
-              btn.textContent = '×';
-              btn.className = 'del-btn';
-              btn.title = 'Eliminar del modificado';
-              btn.onclick = () => {
-                if (confirm('¿Eliminar esta línea del texto modificado?')) {
-                  removeLine(rightArea, rightContent);
-                }
-              };
-              spanRight.appendChild(btn);
-            }
-
+            
+            if (leftContent) addDeleteButton(spanLeft, leftArea, leftContent, 'original');
+            if (rightContent) addDeleteButton(spanRight, rightArea, rightContent, 'modificado');
+            
             leftRes.appendChild(spanLeft);
             rightRes.appendChild(spanRight);
           }
-          i += 2; // Saltar ambas partes
-        } else if (part.removed && nextPart.added) {
-          // Caso: Línea eliminada seguida de línea añadida (alinearlas)
-          const nextLines = nextPart.value.split(/\n/).filter(line => line !== '');
-          const maxLen = Math.max(lines.length, nextLines.length);
-
-          for (let j = 0; j < maxLen; j++) {
-            const leftContent = j < lines.length ? lines[j] : '';
-            const rightContent = j < nextLines.length ? nextLines[j] : '';
-            const spanLeft = createLine(leftContent, leftContent ? 'removed' : 'placeholder', leftContent ? leftLine++ : null);
-            const spanRight = createLine(rightContent, rightContent ? 'added' : 'placeholder', rightContent ? rightLine++ : null);
-
-            if (leftContent) {
-              const btn = document.createElement('button');
-              btn.textContent = '×';
-              btn.className = 'del-btn';
-              btn.title = 'Eliminar del original';
-              btn.onclick = () => {
-                if (confirm('¿Eliminar esta línea del texto original?')) {
-                  removeLine(leftArea, leftContent);
-                }
-              };
-              spanLeft.appendChild(btn);
-            }
-            if (rightContent) {
-              const btn = document.createElement('button');
-              btn.textContent = '×';
-              btn.className = 'del-btn';
-              btn.title = 'Eliminar del modificado';
-              btn.onclick = () => {
-                if (confirm('¿Eliminar esta línea del texto modificado?')) {
-                  removeLine(rightArea, rightContent);
-                }
-              };
-              spanRight.appendChild(btn);
-            }
-
-            leftRes.appendChild(spanLeft);
-            rightRes.appendChild(spanRight);
-          }
-          i += 2; // Saltar ambas partes
+          i += 2;
         } else if (part.added) {
-          // Caso: Solo línea añadida
           lines.forEach(line => {
-            const spanLeft = createLine('', 'placeholder', null);
-            const spanRight = createLine(line, 'added', rightLine);
-            const btn = document.createElement('button');
-            btn.textContent = '×';
-            btn.className = 'del-btn';
-            btn.title = 'Eliminar del modificado';
-            btn.onclick = () => {
-              if (confirm('¿Eliminar esta línea del texto modificado?')) {
-                removeLine(rightArea, line);
-              }
-            };
-            spanRight.appendChild(btn);
-            leftRes.appendChild(spanLeft);
+            const spanRight = createLine(line, 'added', rightLine++);
+            addDeleteButton(spanRight, rightArea, line, 'modificado');
+            leftRes.appendChild(createLine('', 'placeholder', null));
             rightRes.appendChild(spanRight);
-            rightLine += 1;
           });
-          i += 1;
+          i++;
         } else if (part.removed) {
-          // Caso: Solo línea eliminada
           lines.forEach(line => {
-            const spanLeft = createLine(line, 'removed', leftLine);
-            const spanRight = createLine('', 'placeholder', null);
-            const btn = document.createElement('button');
-            btn.textContent = '×';
-            btn.className = 'del-btn';
-            btn.title = 'Eliminar del original';
-            btn.onclick = () => {
-              if (confirm('¿Eliminar esta línea del texto original?')) {
-                removeLine(leftArea, line);
-              }
-            };
-            spanLeft.appendChild(btn);
+            const spanLeft = createLine(line, 'removed', leftLine++);
+            addDeleteButton(spanLeft, leftArea, line, 'original');
             leftRes.appendChild(spanLeft);
-            rightRes.appendChild(spanRight);
-            leftLine += 1;
+            rightRes.appendChild(createLine('', 'placeholder', null));
           });
-          i += 1;
+          i++;
         } else {
-          // Caso: Líneas sin cambios
+          // Líneas sin cambios
           lines.forEach(line => {
-            const spanLeft = createLine(line, 'unchanged', leftLine);
-            const spanRight = createLine(line, 'unchanged', rightLine);
-            leftRes.appendChild(spanLeft);
-            rightRes.appendChild(spanRight);
-            leftLine += 1;
-            rightLine += 1;
+            leftRes.appendChild(createLine(line, 'unchanged', leftLine++));
+            rightRes.appendChild(createLine(line, 'unchanged', rightLine++));
           });
-          i += 1;
+          i++;
         }
       }
+    }
+    
+    function addDeleteButton(span, textArea, lineText, origin) {
+        const btn = document.createElement('button');
+        btn.textContent = '×';
+        btn.className = 'del-btn';
+        btn.title = `Eliminar del ${origin}`;
+        btn.onclick = () => {
+            if (confirm(`¿Eliminar esta línea del texto ${origin}?`)) {
+                removeLine(textArea, lineText);
+            }
+        };
+        span.appendChild(btn);
     }
 
     function removeLine(textArea, lineText) {
       const lines = textArea.value.split(/\n/);
-      const idx = lines.indexOf(lineText);
+      const idx = lines.findIndex(l => l === lineText);
       if (idx > -1) {
         lines.splice(idx, 1);
         textArea.value = lines.join('\n');
         renderDiff();
       }
     }
-
+    
+    // --- Event Listeners ---
     compareBtn.addEventListener('click', renderDiff);
     clearBtn.addEventListener('click', () => {
       leftArea.value = '';
@@ -462,34 +406,32 @@
     });
     modeToggle.addEventListener('click', toggleMode);
 
+    // Listeners para botones de herramientas
+    leftUnindentBtn.addEventListener('click', () => unindentText(leftArea));
+    leftToggleCaseBtn.addEventListener('click', () => toggleCaseText(leftArea));
+    rightUnindentBtn.addEventListener('click', () => unindentText(rightArea));
+    rightToggleCaseBtn.addEventListener('click', () => toggleCaseText(rightArea));
+
     // Sincronizar scroll
     let isScrolling = false;
-    leftRes.addEventListener('scroll', () => {
-      if (!isScrolling) {
-        isScrolling = true;
-        rightRes.scrollTop = leftRes.scrollTop;
-        isScrolling = false;
-      }
-    });
-    rightRes.addEventListener('scroll', () => {
-      if (!isScrolling) {
-        isScrolling = true;
-        leftRes.scrollTop = rightRes.scrollTop;
-        isScrolling = false;
-      }
+    [leftRes, rightRes].forEach((el, idx, arr) => {
+        el.addEventListener('scroll', () => {
+            if (!isScrolling) {
+                isScrolling = true;
+                arr[1 - idx].scrollTop = el.scrollTop;
+                isScrolling = false;
+            }
+        });
     });
 
     // Autoajustar altura de textareas
     [leftArea, rightArea].forEach(el => {
-      el.addEventListener('input', () => {
+      function autoGrow() {
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
-      });
-      // Inicializar altura
-      setTimeout(() => {
-        el.style.height = 'auto';
-        el.style.height = `${el.scrollHeight}px`;
-      }, 10);
+      }
+      el.addEventListener('input', autoGrow);
+      setTimeout(autoGrow, 10); // Inicializar altura
     });
   </script>
 </body>
