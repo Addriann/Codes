@@ -232,14 +232,16 @@
   <div id="editor">
     <div class="editor-wrapper">
         <div class="textarea-controls">
-            <button id="left-unindent" class="util-btn" title="Eliminar sangría">↤</button>
+            <button id="left-unindent" class="util-btn" title="Eliminar toda la sangría">↤</button>
+            <button id="left-trim-indent" class="util-btn" title="Eliminar sangría común">⇤</button>
             <button id="left-togglecase" class="util-btn" title="Convertir mayúsculas/minúsculas">Aa</button>
         </div>
         <textarea id="left" placeholder="Pega el texto original aquí..."></textarea>
     </div>
     <div class="editor-wrapper">
         <div class="textarea-controls">
-             <button id="right-unindent" class="util-btn" title="Eliminar sangría">↤</button>
+             <button id="right-unindent" class="util-btn" title="Eliminar toda la sangría">↤</button>
+             <button id="right-trim-indent" class="util-btn" title="Eliminar sangría común">⇤</button>
              <button id="right-togglecase" class="util-btn" title="Convertir mayúsculas/minúsculas">Aa</button>
         </div>
         <textarea id="right" placeholder="Pega el texto modificado aquí..."></textarea>
@@ -261,8 +263,10 @@
 
     // Botones de herramientas
     const leftUnindentBtn = document.getElementById('left-unindent');
+    const leftTrimIndentBtn = document.getElementById('left-trim-indent');
     const leftToggleCaseBtn = document.getElementById('left-togglecase');
     const rightUnindentBtn = document.getElementById('right-unindent');
+    const rightTrimIndentBtn = document.getElementById('right-trim-indent');
     const rightToggleCaseBtn = document.getElementById('right-togglecase');
 
     // Función para alternar entre modos
@@ -275,26 +279,54 @@
       localStorage.setItem('mode', newMode);
     }
 
-    // Cargar modo guardado o predeterminado (light por preferencia)
+    // Cargar modo guardado o predeterminado
     const savedMode = localStorage.getItem('mode') || 'light';
-    document.body.className = `${savedMode}-mode`; // Limpia clases previas y establece la correcta
+    document.body.className = `${savedMode}-mode`;
     modeToggle.textContent = savedMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro';
 
-    // ---- Nuevas funciones de herramientas ----
+    // ---- Funciones de herramientas ----
     function unindentText(textArea) {
         const lines = textArea.value.split('\n');
         const unindentedLines = lines.map(line => line.replace(/^[ \t]+/, ''));
         textArea.value = unindentedLines.join('\n');
     }
 
+    function trimCommonIndentation(textArea) {
+        const text = textArea.value;
+        const lines = text.split('\n');
+        
+        // No hacer nada si el texto está vacío
+        if (lines.length === 0) return;
+
+        // Encontrar la sangría mínima
+        let minIndent = Infinity;
+        for (const line of lines) {
+            // Ignorar líneas vacías o que solo contienen espacios en blanco
+            if (line.trim() === '') continue;
+            
+            const leadingWhitespace = line.match(/^[ \t]*/)[0];
+            if (leadingWhitespace.length < minIndent) {
+                minIndent = leadingWhitespace.length;
+            }
+        }
+
+        // Si hay una sangría común, eliminarla
+        if (minIndent > 0 && minIndent !== Infinity) {
+            const newLines = lines.map(line => {
+                // No modificar líneas que son completamente blancas
+                return line.trim() === '' ? line : line.substring(minIndent);
+            });
+            textArea.value = newLines.join('\n');
+        }
+    }
+
     function toggleCaseText(textArea) {
         const text = textArea.value;
-        // Si hay más minúsculas que mayúsculas, convierte a mayúsculas. De lo contrario, a minúsculas.
         const isMostlyLowercase = (text.match(/[a-z]/g) || []).length >= (text.match(/[A-Z]/g) || []).length;
         textArea.value = isMostlyLowercase ? text.toUpperCase() : text.toLowerCase();
     }
-    // ------------------------------------------
-
+    
+    // ---- Lógica de comparación (Diff) ----
     function createLine(content, className, lineNumber) {
       const div = document.createElement('div');
       div.className = `line ${className}`;
@@ -328,7 +360,6 @@
         const lines = part.value.split(/\n/).filter(line => line !== '');
 
         if ((part.added && nextPart.removed) || (part.removed && nextPart.added)) {
-          // Alinear líneas añadidas y eliminadas
           const removedLines = (part.removed ? part.value : nextPart.value).split(/\n/).filter(l => l !== '');
           const addedLines = (part.added ? part.value : nextPart.value).split(/\n/).filter(l => l !== '');
           const maxLen = Math.max(addedLines.length, removedLines.length);
@@ -363,7 +394,6 @@
           });
           i++;
         } else {
-          // Líneas sin cambios
           lines.forEach(line => {
             leftRes.appendChild(createLine(line, 'unchanged', leftLine++));
             rightRes.appendChild(createLine(line, 'unchanged', rightLine++));
@@ -408,8 +438,11 @@
 
     // Listeners para botones de herramientas
     leftUnindentBtn.addEventListener('click', () => unindentText(leftArea));
+    leftTrimIndentBtn.addEventListener('click', () => trimCommonIndentation(leftArea));
     leftToggleCaseBtn.addEventListener('click', () => toggleCaseText(leftArea));
+    
     rightUnindentBtn.addEventListener('click', () => unindentText(rightArea));
+    rightTrimIndentBtn.addEventListener('click', () => trimCommonIndentation(rightArea));
     rightToggleCaseBtn.addEventListener('click', () => toggleCaseText(rightArea));
 
     // Sincronizar scroll
@@ -431,7 +464,7 @@
         el.style.height = `${el.scrollHeight}px`;
       }
       el.addEventListener('input', autoGrow);
-      setTimeout(autoGrow, 10); // Inicializar altura
+      setTimeout(autoGrow, 10);
     });
   </script>
 </body>
