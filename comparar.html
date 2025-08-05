@@ -227,7 +227,7 @@
   <div id="controls">
     <button id="compareBtn">Comparar</button>
     <button id="clearBtn">Limpiar</button>
-    <button id="modeToggle">Cambiar a Modo Oscuro</button>
+    <button id="modeToggle">Modo Oscuro</button>
   </div>
   <div id="editor">
     <div class="editor-wrapper">
@@ -287,7 +287,8 @@
     // ---- Funciones de herramientas ----
     function unindentText(textArea) {
         const lines = textArea.value.split('\n');
-        const unindentedLines = lines.map(line => line.replace(/^[ \t]+/, ''));
+        // MODIFICADO: Añadido \u00A0 para reconocer espacios de no separación
+        const unindentedLines = lines.map(line => line.replace(/^[ \t\u00A0]+/, ''));
         textArea.value = unindentedLines.join('\n');
     }
 
@@ -295,25 +296,21 @@
         const text = textArea.value;
         const lines = text.split('\n');
         
-        // No hacer nada si el texto está vacío
         if (lines.length === 0) return;
 
-        // Encontrar la sangría mínima
         let minIndent = Infinity;
         for (const line of lines) {
-            // Ignorar líneas vacías o que solo contienen espacios en blanco
             if (line.trim() === '') continue;
             
-            const leadingWhitespace = line.match(/^[ \t]*/)[0];
+            // MODIFICADO: Añadido \u00A0 para reconocer espacios de no separación
+            const leadingWhitespace = line.match(/^[ \t\u00A0]*/)[0];
             if (leadingWhitespace.length < minIndent) {
                 minIndent = leadingWhitespace.length;
             }
         }
 
-        // Si hay una sangría común, eliminarla
         if (minIndent > 0 && minIndent !== Infinity) {
             const newLines = lines.map(line => {
-                // No modificar líneas que son completamente blancas
                 return line.trim() === '' ? line : line.substring(minIndent);
             });
             textArea.value = newLines.join('\n');
